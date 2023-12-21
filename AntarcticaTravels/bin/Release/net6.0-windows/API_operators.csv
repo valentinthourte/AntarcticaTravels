@@ -1,0 +1,4 @@
+Name,URLs
+Quark,ItineraryURL,https://www.quarkexpeditions.com/api/public/1/itinerary,DepartureURL,https://www.quarkexpeditions.com/api/public/1/departure
+Oceanwide,CompleteURL,https://oceanwide-expeditions.com/trip-feed/agents?currency=USD
+Poseidon,CompleteURL,https://poseidonexpeditions.com/feed/
