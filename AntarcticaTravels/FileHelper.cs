@@ -61,7 +61,7 @@ namespace AntarcticaTravels
 
             File.WriteAllText(filePath, csv.ToString());
 
-            return filePath;
+            return Path.GetDirectoryName(filePath);
         }
 
         private static string GetHeadersForWebpageCSV()
@@ -81,7 +81,7 @@ namespace AntarcticaTravels
                 voyage.GetCabins().Skip(1).ToList().ForEach(cabin =>
                 {
                     var line = $",,,,,," +
-                                $"{SanitizeCsvLine(cabin.CabinName)},{firstCabin.GetOriginalPrice()},{(firstCabin.HasOffer() ? firstCabin.GetCabinPrice() : "")}";
+                                $"{SanitizeCsvLine(cabin.CabinName)},{cabin.GetOriginalPrice()},{(cabin.HasOffer() ? cabin.GetCabinPrice() : "")}";
                     csv.AppendLine(line);
                 });
                 return csv;

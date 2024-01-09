@@ -83,7 +83,6 @@ namespace AntarcticaTravels
         [JsonProperty("cabins")]
         public List<OceanwideCabin> Cabins { get; set; }
 
-
         [JsonProperty("ship")]
         public string Ship { get; set; }
 
