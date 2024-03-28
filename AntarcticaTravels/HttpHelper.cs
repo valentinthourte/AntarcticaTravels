@@ -1,6 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using AntarcticaTravels.Atlas;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.ComponentModel;
 using System.DirectoryServices;
+using System.Net.Http.Headers;
 using System.Security.Policy;
 using System.Xml.Serialization;
 
@@ -89,8 +93,8 @@ namespace AntarcticaTravels
         internal static async Task<List<Voyage>> GetQuarkVoyages(Dictionary<string, string> URLs)
         {
 
-            string ITINERARY_URL = URLs.Values.ElementAt(0);
-            string DEPARTURE_URL = URLs.Values.ElementAt(1);
+            string ITINERARY_URL = URLs["ItineraryURL"];
+            string DEPARTURE_URL = URLs["DepartureURL"];
             List<Voyage> voyageReturnList = new();
 
             HttpClient itineraryClient = new HttpClient();
@@ -138,6 +142,92 @@ namespace AntarcticaTravels
             return voyageReturnList;
         }
 
+        internal static async Task<List<Voyage>> GetAtlasVoyages(Dictionary<string, string> URLs)
+        {
+            string CRUISE_LIST_URL = URLs["CruiseListURL"];
+            string MARKET_PRICING_URL = URLs["MarketPricingURL"];
+            string SHIPS_URL = URLs["ShipsURL"];
+            string TOKEN_URL = URLs["TokenURL"];
+
+            string token = await GetAtlasToken(TOKEN_URL);
+            List<Voyage> voyageList = new List<Voyage>();
+
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage cruiseListResponse = await client.GetAsync(CRUISE_LIST_URL);
+            string responseString = await cruiseListResponse.Content.ReadAsStringAsync();
+            HttpResponseMessage marketPricingResponse = await client.GetAsync(MARKET_PRICING_URL);
+
+            if (cruiseListResponse.IsSuccessStatusCode && marketPricingResponse.IsSuccessStatusCode)
+            {
+                List<AtlasMarketPricing> marketPricingList = JsonConvert.DeserializeObject<List<AtlasMarketPricing>>(await marketPricingResponse.Content.ReadAsStringAsync());
+                AtlasCruiseList cruiseList = JsonConvert.DeserializeObject<AtlasCruiseList>(await cruiseListResponse.Content.ReadAsStringAsync());
+                if (cruiseList is not null && cruiseList.Cruises.Any())
+                {
+                    foreach (AtlasCruiseHeader cruise in cruiseList.Cruises)
+                    {
+                        try
+                        {
+                            HttpResponseMessage cruiseDetailResponse = await client.GetAsync($"{CRUISE_LIST_URL}{cruise.Code}/");
+                            string cruiseDetailResponseString = await cruiseDetailResponse.Content.ReadAsStringAsync();
+                            AtlasCruiseDetail? cruiseDetail = JsonConvert.DeserializeObject<AtlasCruiseDetail>(cruiseDetailResponseString);
+                            AtlasMarketPricing marketPricing = marketPricingList.Where(m => m.sailing == cruiseDetail.Sailings.First().Code).FirstOrDefault();
+                            if (marketPricing is not null)
+                            {
+                                HttpResponseMessage shipDetailResponse = await client.GetAsync($"{SHIPS_URL}/{cruiseDetail.Ship.Code}/");
+                                AtlasShip? ship = JsonConvert.DeserializeObject<AtlasShip>(await shipDetailResponse.Content.ReadAsStringAsync());
+                                Vessel vessel = ship.ToVessel(marketPricing);
+                                Voyage voyage = cruiseDetail.ToVoyage(vessel);
+                                voyageList.Add(voyage);
+                            }
+                        }
+                        catch (Exception ex) 
+                        { 
+                            Console.WriteLine(ex.ToString());
+                            throw;
+                        }
+                    }
+                }
+            }
+            return voyageList;
+        }
+
+        private static async Task<string> GetAtlasToken(string TOKEN_URL)
+        {
+            var requestBody = new
+            {
+                username = "aov:antarcticatravels",
+                password = "1FFp5nHW_aov",
+                channel_partner = "1",
+                agency = "8697",
+                channel = "CS"
+            };
+
+            var jsonBody = JsonConvert.SerializeObject(requestBody);
+
+            string token = string.Empty;
+
+            using (HttpClient client = new HttpClient())
+            {
+                var content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await client.PostAsync(TOKEN_URL, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseContent = await response.Content.ReadAsStringAsync();
+
+                    dynamic responseData = JsonConvert.DeserializeObject(responseContent);
+                    token = responseData.token;
+                }
+                else
+                {
+                    throw new Exception("Could not obtain Atlas Token.");
+                }
+            }
+            return token;
+        }
     }
 
 }

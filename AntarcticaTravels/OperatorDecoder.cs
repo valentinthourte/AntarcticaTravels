@@ -23,7 +23,6 @@
     }
     internal class ApiOperatorDecoder : OperatorDecoder
     {
-
         Operator OperatorDecoder.GetOperatorFromCsvLine(string line)
         {
             var opFields = line.Split(",");

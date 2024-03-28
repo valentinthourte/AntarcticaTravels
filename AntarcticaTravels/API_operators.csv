@@ -2,3 +2,4 @@ Name,URLs
 Quark,ItineraryURL,https://www.quarkexpeditions.com/api/public/1/itinerary,DepartureURL,https://www.quarkexpeditions.com/api/public/1/departure
 Oceanwide,CompleteURL,https://oceanwide-expeditions.com/trip-feed/agents?currency=USD
 Poseidon,CompleteURL,https://poseidonexpeditions.com/feed/
+Atlas,CruiseListURL,https://devapi.cabinselect.com/avl/cruises,CruiseDetailURL,https://devapi.cabinselect.com/avl/cruises,ShipsURL,https://devapi.cabinselect.com/avl/ships,MarketPricingURL,https://devapi.cabinselect.com/export/market-pricing/US/,TokenURL,https://devapi.cabinselect.com/api/token/

@@ -52,6 +52,11 @@ namespace AntarcticaTravels
                         voyages = await HttpHelper.GetPoseidonVoyages(this.URLs);
                         break;
                     }
+                case "Atlas":
+                    {
+                        voyages = await HttpHelper.GetAtlasVoyages(this.URLs);
+                        break;
+                    }
             }
             return voyages.OrderBy(voyage => voyage.VoyageVessel.VesselName).ThenBy(voyage => voyage.StartDate).ToList() ?? new List<Voyage>();
         }
