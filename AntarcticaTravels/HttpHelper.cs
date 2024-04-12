@@ -151,13 +151,14 @@ namespace AntarcticaTravels
 
             string token = await GetAtlasToken(TOKEN_URL);
             List<Voyage> voyageList = new List<Voyage>();
-
+            List<string> failedVoyages = new List<string>();
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage cruiseListResponse = await client.GetAsync(CRUISE_LIST_URL);
             string responseString = await cruiseListResponse.Content.ReadAsStringAsync();
             HttpResponseMessage marketPricingResponse = await client.GetAsync(MARKET_PRICING_URL);
+
 
             if (cruiseListResponse.IsSuccessStatusCode && marketPricingResponse.IsSuccessStatusCode)
             {
@@ -169,27 +170,39 @@ namespace AntarcticaTravels
                     {
                         try
                         {
+                            if (cruise.Code == "WN17Rd")
+                            {
+                                Console.WriteLine("WN17Rd");
+                            }
                             HttpResponseMessage cruiseDetailResponse = await client.GetAsync($"{CRUISE_LIST_URL}{cruise.Code}/");
                             string cruiseDetailResponseString = await cruiseDetailResponse.Content.ReadAsStringAsync();
                             AtlasCruiseDetail? cruiseDetail = JsonConvert.DeserializeObject<AtlasCruiseDetail>(cruiseDetailResponseString);
-                            AtlasMarketPricing marketPricing = marketPricingList.Where(m => m.sailing == cruiseDetail.Sailings.First().Code).FirstOrDefault();
-                            if (marketPricing is not null)
+                            HttpResponseMessage shipDetailResponse = await client.GetAsync($"{SHIPS_URL}/{cruiseDetail.Ship.Code}/");
+                            AtlasShip? ship = JsonConvert.DeserializeObject<AtlasShip>(await shipDetailResponse.Content.ReadAsStringAsync());
+                            foreach (AtlasSailing sailing in cruiseDetail.Sailings)
                             {
-                                HttpResponseMessage shipDetailResponse = await client.GetAsync($"{SHIPS_URL}/{cruiseDetail.Ship.Code}/");
-                                AtlasShip? ship = JsonConvert.DeserializeObject<AtlasShip>(await shipDetailResponse.Content.ReadAsStringAsync());
-                                Vessel vessel = ship.ToVessel(marketPricing);
-                                Voyage voyage = cruiseDetail.ToVoyage(vessel);
-                                voyageList.Add(voyage);
+                                AtlasMarketPricing marketPricing = marketPricingList.Where(m => m.sailing == sailing.Code).FirstOrDefault();
+                                if (marketPricing is not null)
+                                {
+                                    Vessel vessel = ship.ToVessel(marketPricing);
+                                    Voyage voyage = cruiseDetail.ToVoyage(vessel, sailing);
+                                    voyageList.Add(voyage);
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"MarketPricing is null for sailing {sailing.Code}");
+                                }
                             }
                         }
                         catch (Exception ex) 
                         { 
                             Console.WriteLine(ex.ToString());
-                            throw;
+                            failedVoyages.Add($"{cruise.Code}: {ex.Message}");
                         }
                     }
                 }
             }
+            Console.Write(failedVoyages);
             return voyageList;
         }
 

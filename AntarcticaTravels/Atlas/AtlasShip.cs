@@ -20,15 +20,21 @@ namespace AntarcticaTravels
         internal Vessel ToVessel(AtlasMarketPricing marketPricing)
         {
             List<VesselCabin> cabins = new List<VesselCabin>();
+
             foreach (Grade grade in grades)
             {
                 MarketPricingGrade marketGrade = marketPricing.rates.First().grades.Where(g => g.code == grade.code).FirstOrDefault();
                 if (marketGrade != null)
                 {
-                    double price = marketGrade.guest_pricing.First().pricing.Where(p => p.category == "adult").First().pricing_breakdown.total_fare;
-                    double offerPrice = (price + marketGrade.guest_pricing.Last().pricing.Where(p => p.category == "adult").First().pricing_breakdown.total_fare) / 2;
+                    PricingBreakdown breakdown = marketGrade.guest_pricing.First().pricing.Where(p => p.category == "adult").First().pricing_breakdown;
+                    double price = breakdown.fare;
+                    double offerPrice = Math.Floor((price - Math.Abs(breakdown.discount)) / 2) + breakdown.gft;
                     VesselCabin cabin = new VesselCabin(grade.name.Values.First(), new Price(price, offerPrice));
                     cabins.Add(cabin);
+                }
+                else
+                {
+                    Console.WriteLine("");
                 }
             }
 

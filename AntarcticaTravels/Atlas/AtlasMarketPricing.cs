@@ -28,6 +28,7 @@
     {
         public double fare { get; set; }
         public double total_price { get; set; }
+        public double discount { get; set; }
         public double total_fare { get; set; }
         public double single_supplement { get; set; }
         public double gft { get; set; }

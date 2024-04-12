@@ -48,9 +48,9 @@ namespace AntarcticaTravels.Atlas
         [JsonProperty("sailings")]
         public List<AtlasSailing> Sailings { get; set; }
 
-        internal Voyage ToVoyage(Vessel vessel)
+        internal Voyage ToVoyage(Vessel vessel, AtlasSailing sailing)
         {
-            DateTime startDate = this.Sailings.First().Date;
+            DateTime startDate = sailing.Date;
             DateTime endDate = startDate.AddDays(this.Nights);
             Voyage voyage = new Voyage(this.Name.EnUs, startDate, endDate, this.Itinerary.First().Port.Name.EnUs, this.Itinerary.Last().Port.Name.EnUs, vessel);
 

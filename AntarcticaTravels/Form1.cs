@@ -250,7 +250,7 @@ namespace AntarcticaTravels
 
         private void rbLoadCSV_CheckedChanged(object sender, EventArgs e)
         {
-            UpdateOperators();  
+            UpdateOperators();
         }
     }
 }

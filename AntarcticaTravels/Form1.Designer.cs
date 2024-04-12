@@ -474,6 +474,7 @@
             // 
             // cbOperator
             // 
+            cbOperator.DropDownStyle = ComboBoxStyle.DropDownList;
             cbOperator.FormattingEnabled = true;
             cbOperator.Location = new Point(41, 121);
             cbOperator.Name = "cbOperator";

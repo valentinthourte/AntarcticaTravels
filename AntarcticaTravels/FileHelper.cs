@@ -76,12 +76,12 @@ namespace AntarcticaTravels
                 var firstCabin = voyage.GetCabins().First();
                 var first = $"{voyage.VoyageName};{voyage.StartDate.ToString("d/M/yyyy")};{voyage.EndDate.ToString("d/M/yyyy")};" +
                             $"{voyage.Embarkation};{voyage.Disembarkation};{voyage.GetVesselName()};{firstCabin.CabinName};" +
-                            $"{firstCabin.GetOriginalPrice()};{(firstCabin.HasOffer() ? firstCabin.GetCabinPrice() : "")}";
+                            $"{firstCabin.GetOriginalPrice()};{(firstCabin.HasOffer() ? firstCabin.GetCabinPrice().ToString().Replace(",", ".") : "")}";
                 csv.AppendLine(FileHelper.SanitizeCsvLine(first));
                 voyage.GetCabins().Skip(1).ToList().ForEach(cabin =>
                 {
                     var line = $",,,,,," +
-                                $"{SanitizeCsvLine(cabin.CabinName)},{cabin.GetOriginalPrice()},{(cabin.HasOffer() ? cabin.GetCabinPrice() : "")}";
+                                $"{SanitizeCsvLine(cabin.CabinName)},{cabin.GetOriginalPrice()},{(cabin.HasOffer() ? cabin.GetCabinPrice().ToString().Replace(",", ".") : "")}";
                     csv.AppendLine(line);
                 });
                 return csv;
