@@ -12,22 +12,6 @@ namespace AntarcticaTravels
 {
     internal class HttpHelper
     {
-        //internal static async Task<List<Voyage>> GetVoyagesFromURL(string text)
-        //{
-        //    using (HttpClient http = new HttpClient())
-        //    {
-        //        try
-        //        {
-        //            HttpResponseMessage response = await http.GetAsync(text);
-        //            return response.Content.;
-        //        }
-        //        catch
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //}
-
         internal static async Task<string> GetJsonFromRequest(string url)
         {
             using (HttpClient http = new HttpClient ())
@@ -154,12 +138,13 @@ namespace AntarcticaTravels
             List<string> failedVoyages = new List<string>();
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            
 
+            HttpResponseMessage marketPricingResponse = await client.GetAsync(MARKET_PRICING_URL);
             HttpResponseMessage cruiseListResponse = await client.GetAsync(CRUISE_LIST_URL);
             string responseString = await cruiseListResponse.Content.ReadAsStringAsync();
-            HttpResponseMessage marketPricingResponse = await client.GetAsync(MARKET_PRICING_URL);
 
-
+            var sailingsWithoutPricing = new List<string>();
             if (cruiseListResponse.IsSuccessStatusCode && marketPricingResponse.IsSuccessStatusCode)
             {
                 List<AtlasMarketPricing> marketPricingList = JsonConvert.DeserializeObject<List<AtlasMarketPricing>>(await marketPricingResponse.Content.ReadAsStringAsync());
@@ -170,10 +155,6 @@ namespace AntarcticaTravels
                     {
                         try
                         {
-                            if (cruise.Code == "WN17Rd")
-                            {
-                                Console.WriteLine("WN17Rd");
-                            }
                             HttpResponseMessage cruiseDetailResponse = await client.GetAsync($"{CRUISE_LIST_URL}{cruise.Code}/");
                             string cruiseDetailResponseString = await cruiseDetailResponse.Content.ReadAsStringAsync();
                             AtlasCruiseDetail? cruiseDetail = JsonConvert.DeserializeObject<AtlasCruiseDetail>(cruiseDetailResponseString);
@@ -191,6 +172,8 @@ namespace AntarcticaTravels
                                 else
                                 {
                                     Console.WriteLine($"MarketPricing is null for sailing {sailing.Code}");
+                                    sailingsWithoutPricing.Add(sailing.Code);
+
                                 }
                             }
                         }
@@ -211,7 +194,7 @@ namespace AntarcticaTravels
             var requestBody = new
             {
                 username = "aov:antarcticatravels",
-                password = "1FFp5nHW_aov",
+                password = "qV46x7Rt_aov",
                 channel_partner = "1",
                 agency = "8697",
                 channel = "CS"
