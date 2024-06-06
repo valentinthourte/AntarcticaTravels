@@ -95,10 +95,11 @@ namespace AntarcticaTravels
     {
         public string Name { get; set; }
         public decimal Price { get; set; }
+        public decimal PriceWithDiscount { get; set; }
 
         public static explicit operator VesselCabin(Cabin c)
         {
-            return new VesselCabin(c.Name, new Price((double)c.Price));
+            return new VesselCabin(c.Name, new Price((double)c.Price, (double)c.PriceWithDiscount));
         }
     }
 

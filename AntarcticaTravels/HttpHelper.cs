@@ -1,4 +1,6 @@
 ﻿using AntarcticaTravels.Atlas;
+using AntarcticaTravels.Lindblad;
+using Microsoft.VisualBasic.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -167,6 +169,10 @@ namespace AntarcticaTravels
                                 {
                                     Vessel vessel = ship.ToVessel(marketPricing);
                                     Voyage voyage = cruiseDetail.ToVoyage(vessel, sailing);
+                                    if (ship.name == "World Navigator" && voyage.VoyageName.Contains("11-Night Reykjavik to Oslo"))
+                                    {
+                                        Console.WriteLine("11-Night Reykjavik to Oslo");
+                                    }    
                                     voyageList.Add(voyage);
                                 }
                                 else
@@ -224,6 +230,47 @@ namespace AntarcticaTravels
             }
             return token;
         }
-    }
 
+        internal static async Task<List<Voyage>> GetLindbladVoyages(Dictionary<string, string> URLs)
+        {
+            string LINDBLAD_URL = URLs["GeneralURL"];
+            List<Voyage> voyages = new List<Voyage>();
+
+            using (HttpClient http = new HttpClient())
+            {
+                HttpResponseMessage response = await http.GetAsync(LINDBLAD_URL);
+                string xml = await response.Content.ReadAsStringAsync();
+                string line = xml.Split("\n")[1190];
+                LindbladResponse lindbladResponse;
+
+                using (TextReader reader = new StringReader(xml))
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(LindbladResponse));
+                    try
+                    {
+                        lindbladResponse = (LindbladResponse)serializer.Deserialize(reader);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw; 
+                    }
+                    List<LindbladShip> ships = lindbladResponse.Ships.ShipList;
+                    foreach(LindbladVacationOffer offer in lindbladResponse.VacationOffers)
+                    {
+                        LindbladShip voyageShip = ships.Where(s => s.Name.Value == offer.ShipName.Value).FirstOrDefault();
+                        if (voyageShip != null && offer.Regions.RegionList.Where(r => r.Contains("ANTARCTICA")).FirstOrDefault() is not null)
+                        {
+                            foreach (LindbladDeparture departure in offer.Departures.DepartureList)
+                            {
+                                Vessel vessel = voyageShip.ToVessel(departure.Prices.PriceList);
+                                Voyage voyage = new Voyage(offer.Title.Value, departure.ParsedStartDate, departure.ParsedEndDate, offer.ItineraryDays.ItineraryDayList.First().PortName.Value, offer.ItineraryDays.ItineraryDayList.Last().PortName.Value, vessel);
+                                voyages.Add(voyage);
+                            }
+                        }
+                    }
+                }
+            }
+            return voyages;
+        }
+    }
 }

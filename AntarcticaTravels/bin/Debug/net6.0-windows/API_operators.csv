@@ -3,3 +3,4 @@ Quark,ItineraryURL,https://www.quarkexpeditions.com/api/public/1/itinerary,Depar
 Oceanwide,CompleteURL,https://oceanwide-expeditions.com/trip-feed/agents?currency=USD
 Poseidon,CompleteURL,https://poseidonexpeditions.com/feed/
 Atlas,CruiseListURL,https://api.cabinselect.com/avl/cruises/,CruiseDetailURL,https://api.cabinselect.com/avl/cruises,ShipsURL,https://api.cabinselect.com/avl/ships,MarketPricingURL,https://api.cabinselect.com/export/market-pricing/US/,TokenURL,https://api.cabinselect.com/api/token/
+Lindblad,GeneralURL,https://www.expeditions.com/GetXMLFeed/?token=h4WTb26p

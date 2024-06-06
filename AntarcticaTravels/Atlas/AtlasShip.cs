@@ -23,19 +23,21 @@ namespace AntarcticaTravels
 
             foreach (Grade grade in grades)
             {
-                MarketPricingGrade marketGrade = marketPricing.rates.First().grades.Where(g => g.code == grade.code).FirstOrDefault();
+                MarketPricingGrade marketGrade = marketPricing.rates.Skip(1).Take(1).First().grades.Where(g => g.code == grade.code).FirstOrDefault();
+                VesselCabin cabin;
                 if (marketGrade != null)
                 {
                     PricingBreakdown breakdown = marketGrade.guest_pricing.First().pricing.Where(p => p.category == "adult").First().pricing_breakdown;
                     double price = breakdown.fare;
                     double offerPrice = Math.Floor((price - Math.Abs(breakdown.discount)) / 2) + breakdown.gft;
-                    VesselCabin cabin = new VesselCabin(grade.name.Values.First(), new Price(price, offerPrice));
-                    cabins.Add(cabin);
+                    cabin = new VesselCabin(grade.name.Values.First(), new Price(price, offerPrice));
                 }
                 else
                 {
-                    Console.WriteLine("");
+                    cabin = new VesselCabin(grade.name.Values.First());
                 }
+
+                cabins.Add(cabin);
             }
 
             Vessel vessel = new Vessel(this.name, cabins);

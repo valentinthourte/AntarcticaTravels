@@ -57,6 +57,11 @@ namespace AntarcticaTravels
                         voyages = await HttpHelper.GetAtlasVoyages(this.URLs);
                         break;
                     }
+                case "Lindblad":
+                    {
+                        voyages = await HttpHelper.GetLindbladVoyages(this.URLs);
+                        break;
+                    }
             }
             return voyages.OrderBy(voyage => voyage.VoyageVessel.VesselName).ThenBy(voyage => voyage.StartDate).ToList() ?? new List<Voyage>();
         }

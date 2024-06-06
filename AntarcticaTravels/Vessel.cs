@@ -25,11 +25,11 @@ namespace AntarcticaTravels
         public void SetCabins(List<VesselCabin> cabins)
         {
             this.Cabins = cabins;
-            this.CheapestCabin = this.Cabins.MinBy(cabin => cabin.GetCabinPrice());
+            this.CheapestCabin = this.Cabins.Where(c => double.TryParse(c.GetCabinPrice(), out double result)).MinBy(cabin => double.Parse(cabin.GetCabinPrice()));
         }
         public double GetCheapestPrice()
         {
-            return this.CheapestCabin.GetCabinPrice();
+            return double.Parse(this.CheapestCabin.GetCabinPrice());
         }
 
         internal string? GetName()

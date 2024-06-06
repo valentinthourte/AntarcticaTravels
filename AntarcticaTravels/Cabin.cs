@@ -9,24 +9,32 @@ namespace AntarcticaTravels
     public class VesselCabin
     {
         public string CabinName { get; set; }
-        private Price CabinPrice { get; set; }
+        private Price? CabinPrice { get; set; }
+
+        
+        public VesselCabin(string cabinName) 
+        {
+            this.CabinName = cabinName;
+            this.CabinPrice = null;
+        }
 
         public VesselCabin(string cabinName, Price cabinPrice)
         {
             CabinName = cabinName;
             CabinPrice = cabinPrice;
         }
+
         public bool HasOffer()
         {
-            return this.CabinPrice.OfferPrice != -1;
+            return this.CabinPrice is null ? false : this.CabinPrice.OfferPrice != -1;
         }
-        public double GetCabinPrice()
+        public string GetCabinPrice()
         {
-            return this.CabinPrice.OfferPrice != -1 ? this.CabinPrice.OfferPrice : this.CabinPrice.StartPrice;
+            return this.CabinPrice is null ? "N/A" : (this.CabinPrice.OfferPrice != -1 ? this.CabinPrice.OfferPrice : this.CabinPrice.StartPrice).ToString();
         }
-        public double GetOriginalPrice()
+        public string GetOriginalPrice()
         {
-            return this.CabinPrice.StartPrice;
+            return this.CabinPrice is null ? "N/A" : (this.CabinPrice.StartPrice).ToString();
         }
         internal void SetOfferPrice(double cabinOfferPrice)
         {
