@@ -240,7 +240,6 @@ namespace AntarcticaTravels
             {
                 HttpResponseMessage response = await http.GetAsync(LINDBLAD_URL);
                 string xml = await response.Content.ReadAsStringAsync();
-                string line = xml.Split("\n")[1190];
                 LindbladResponse lindbladResponse;
 
                 using (TextReader reader = new StringReader(xml))
@@ -257,14 +256,18 @@ namespace AntarcticaTravels
                     List<LindbladShip> ships = lindbladResponse.Ships.ShipList;
                     foreach(LindbladVacationOffer offer in lindbladResponse.VacationOffers)
                     {
-                        LindbladShip voyageShip = ships.Where(s => s.Name.Value == offer.ShipName.Value).FirstOrDefault();
-                        if (voyageShip != null && offer.Regions.RegionList.Where(r => r.Contains("ANTARCTICA")).FirstOrDefault() is not null)
+                        List<string> validRegions = new List<string>() { "ANTARCTICA", "ARCTIC", "SOUTH AMERICA" };
+                        if (offer.Regions.RegionList.Where(r => validRegions.Contains(r)).FirstOrDefault() is not null)
                         {
                             foreach (LindbladDeparture departure in offer.Departures.DepartureList)
                             {
-                                Vessel vessel = voyageShip.ToVessel(departure.Prices.PriceList);
-                                Voyage voyage = new Voyage(offer.Title.Value, departure.ParsedStartDate, departure.ParsedEndDate, offer.ItineraryDays.ItineraryDayList.First().PortName.Value, offer.ItineraryDays.ItineraryDayList.Last().PortName.Value, vessel);
-                                voyages.Add(voyage);
+                                LindbladShip voyageShip = ships.Where(s => s.Name.Value == departure.ShipName).FirstOrDefault();
+                                if (voyageShip != null)
+                                {
+                                    Vessel vessel = voyageShip.ToVessel(departure.Prices.PriceList);
+                                    Voyage voyage = new Voyage(offer.Title.Value, departure.ParsedStartDate, departure.ParsedEndDate, offer.ItineraryDays.ItineraryDayList.First().PortName.Value, offer.ItineraryDays.ItineraryDayList.Last().PortName.Value, vessel);
+                                    voyages.Add(voyage);
+                                }
                             }
                         }
                     }

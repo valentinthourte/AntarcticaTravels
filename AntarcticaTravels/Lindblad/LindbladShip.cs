@@ -29,15 +29,12 @@ namespace AntarcticaTravels.Lindblad
             List<VesselCabin> cabins = new List<VesselCabin>();
             foreach (LindbladPrice price in priceList)
             {
-                LindbladDeck deck = this.DeckPlan.Decks.Where(d => d.Categories.CategoryList.Where(c => c.Code.Value == price.Category.Value).FirstOrDefault() != null).FirstOrDefault();
-                if (deck != null)
-                {
-                    Price cabinPrice = price.Double > 0 ? new Price(price.Double, price.DoubleDiscount) : new Price(price.Solo, price.SoloDiscount);
-                    VesselCabin cabin = new VesselCabin(deck.Name.Value, cabinPrice);
-                    cabins.Add(cabin);
-                }
-
+                string cabinName = price.Category.Value;
+                Price cabinPrice = cabinName.Contains("S") ? (price.SoloDiscount == 0 ? new Price(price.Solo) : new Price(price.Solo, price.Solo - price.SoloDiscount)) : (price.DoubleDiscount == 0 ? new Price(price.Double) : new Price(price.Double, price.Double - price.DoubleDiscount));
+                VesselCabin cabin = new VesselCabin($"CATEGORY {cabinName}", cabinPrice);
+                cabins.Add(cabin);
             }
+
             return new Vessel(this.Name.Value, cabins);
         }
     }
